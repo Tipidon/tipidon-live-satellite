@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07111f">
+  <title>TIPIDON LIVE SATELLITE</title>
+  <meta name="description" content="Live-updating satellite and Earth observation map powered by public NASA data.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>🛰️ TIPIDON LIVE</h1>
+      <p>Satellite & Earth Observation Dashboard</p>
+    </div>
+    <div class="status"><span id="dot"></span><span id="statusText">CONNECTING</span></div>
+  </header>
+
+  <main>
+    <aside class="panel">
+      <label for="search">Find a location</label>
+      <div class="search">
+        <input id="search" placeholder="e.g. Lagos, Nigeria or 6.5244, 3.3792">
+        <button id="go">GO</button>
+      </div>
+
+      <div class="controls">
+        <button id="locate">📍 My location</button>
+        <button id="refresh">🔄 Update</button>
+      </div>
+
+      <h3>Layers</h3>
+      <label class="layer"><input type="checkbox" id="sat" checked> Satellite imagery</label>
+      <label class="layer"><input type="checkbox" id="clouds"> Clouds</label>
+
+      <h3>Map</h3>
+      <label class="layer"><input type="radio" name="base" value="street" checked> Street map</label>
+      <label class="layer"><input type="radio" name="base" value="dark"> Dark map</label>
+
+      <div class="info">
+        <div><b>Imagery source</b><br>NASA GIBS</div>
+        <div><b>Map source</b><br>OpenStreetMap</div>
+        <div><b>Last refresh</b><br><span id="updated">—</span></div>
+      </div>
+
+      <p class="notice">
+        This is a live-updating Earth observation viewer, not a continuous CCTV feed from space.
+        Satellite imagery appears when the underlying satellite product is available.
+      </p>
+    </aside>
+
+    <section id="map"></section>
+  </main>
+
+  <footer>
+    NASA GIBS imagery • OpenStreetMap © contributors • TIPIDON LIVE
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Inter,Arial,sans-serif;background:#07111f;color:#eaf2ff}
+body{overflow:hidden}
+.topbar{height:70px;background:#081827;border-bottom:1px solid #183149;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:relative;z-index:1000}
+h1{font-size:20px;margin:0;font-weight:800;letter-spacing:.5px}
+.topbar p{margin:3px 0 0;color:#8fa9c3;font-size:12px}
+.status{font-size:11px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;gap:7px}
+#dot{width:9px;height:9px;border-radius:50%;background:#24d17e;box-shadow:0 0 10px #24d17e}
+main{height:calc(100vh - 98px);display:flex}
+.panel{width:320px;background:#091827;border-right:1px solid #183149;padding:18px;overflow:auto;z-index:900}
+.panel label{font-size:12px;color:#9db1c6;font-weight:700}
+.search{display:flex;margin-top:7px}
+.search input{width:100%;background:#101f30;border:1px solid #27435c;color:white;padding:11px;border-radius:8px 0 0 8px;outline:none}
+button{background:#1769aa;color:#fff;border:0;padding:10px 12px;border-radius:7px;font-weight:800;cursor:pointer}
+.search button{border-radius:0 8px 8px 0}
+.controls{display:flex;gap:8px;margin:12px 0}
+.controls button{flex:1;font-size:11px}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#6f91ad;margin:22px 0 9px}
+.layer{display:block;padding:8px 0;color:#d5e2ee!important}
+.layer input{margin-right:8px}
+.info{margin-top:22px;border-top:1px solid #183149;padding-top:14px;display:grid;gap:12px;font-size:11px;color:#8fa9c3}
+.info b{color:#d9e7f5}
+.notice{font-size:10px;line-height:1.55;color:#718ba4;margin-top:20px}
+#map{flex:1;min-width:0}
+footer{height:28px;background:#081827;border-top:1px solid #183149;color:#69839d;font-size:10px;display:flex;align-items:center;padding:0 12px}
+.leaflet-control-layers{background:#091827!important;color:#dbe9f5!important;border:1px solid #27435c!important}
+.leaflet-control-layers-expanded{padding:9px}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#091827;color:#eaf2ff}
+@media(max-width:700px){
+  body{overflow:auto}
+  .topbar{height:62px}
+  main{height:calc(100vh - 90px);display:block;position:relative}
+  .panel{position:absolute;left:10px;top:10px;width:calc(100% - 20px);max-height:270px;background:rgba(9,24,39,.94);border:1px solid #27435c;border-radius:12px;backdrop-filter:blur(8px)}
+  #map{height:100%}
+  footer{display:none}
+}
