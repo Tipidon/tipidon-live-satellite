@@ -1,37 +1,25 @@
-# TIPIDON LIVE SATELLITE
+# TIPIDON LIVE v3 — Hacker Command Center
 
-A free GitHub Pages starter for a live-updating Earth-observation map.
+This version focuses on a futuristic command-center interface while keeping the map practical.
 
-## Deploy
+## Features
+- Dark hacker/HUD visual design
+- Search cities, roads, landmarks and coordinates
+- Interactive map and clickable locations
+- NASA GIBS satellite imagery
+- NASA cloud layer
+- Public KartaView street imagery where available
+- Own-device browser geolocation with permission
+- Adaptive data mode (auto/low/normal/high)
+- Mobile-friendly layout
 
-1. Create a new GitHub repository.
-2. Upload `index.html`, `style.css`, and `app.js` to the repository root.
-3. Open **Settings → Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**.
-5. Select `main` and `/ (root)`.
-6. Save.
-7. Open the GitHub Pages URL after deployment.
+## Important
+Satellite imagery is Earth-observation imagery, not a continuous live camera. Street imagery is public/community imagery and is only available where coverage exists.
 
-No API key is required for the NASA GIBS imagery used by this starter.
+The device tool locates the device using the browser's permission system. It does not secretly locate other devices.
 
-## What this version does
+## GitHub update
+Replace `index.html`, `style.css`, `app.js`, and optionally `README.md` in the existing repository, then commit. GitHub Pages will publish the new static files.
 
-- Interactive world map
-- NASA GIBS satellite imagery layer
-- NASA GIBS cloud layer
-- Automatic browser refresh every 15 minutes
-- Location search using OpenStreetMap Nominatim
-- Browser geolocation
-- Mobile/desktop layout
-
-## Important limitation
-
-This is not a continuous live camera from orbit. Earth-observation satellites only provide imagery when the relevant satellite product has an observation available. The page refreshes its data connection automatically, but it cannot create observations that the satellite has not transmitted.
-
-For a production system with true server-side live events, aircraft/vessel feeds, historical archives, AI change detection, user accounts, alerts and higher-resolution/commercial imagery, add a backend and additional data providers.
-
-## Sources
-
-NASA GIBS: https://gibs.earthdata.nasa.gov/
-NASA Earthdata: https://www.earthdata.nasa.gov/
-OpenStreetMap: https://www.openstreetmap.org/
+## Production note
+GitHub Pages is useful for development/testing, but GitHub says Pages is not intended for hosting an online business or commercial SaaS. Move the production/commercial backend and application to suitable hosting before charging users.

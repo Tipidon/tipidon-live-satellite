@@ -1,144 +1,19 @@
-const map = L.map("map", { zoomControl: true }).setView([6.5244, 3.3792], 7);
-
-const street = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-
-const dark = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-  maxZoom: 20,
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-});
-
-let imagery = null;
-let clouds = null;
-let marker = null;
-
-function utcDate(daysAgo = 0) {
-  const d = new Date(Date.now() - daysAgo * 86400000);
-  return d.toISOString().slice(0,10);
-}
-
-/*
- NASA GIBS provides map tiles from public Earth-observation products.
- We use WMS so the browser can request the imagery directly without
- exposing any private API key.
-*/
-function addSatelliteLayer(date) {
-  if (imagery) map.removeLayer(imagery);
-  imagery = L.tileLayer.wms(
-    "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi",
-    {
-      layers: "MODIS_Terra_CorrectedReflectance_TrueColor",
-      format: "image/jpeg",
-      transparent: false,
-      version: "1.1.1",
-      time: date,
-      attribution: "NASA GIBS"
-    }
-  );
-  if (document.getElementById("sat").checked) imagery.addTo(map);
-}
-
-function addCloudLayer(date) {
-  if (clouds) map.removeLayer(clouds);
-  clouds = L.tileLayer.wms(
-    "https://gibs.earthdata.nasa.gov/wms/epsg3857/nrt/wms.cgi",
-    {
-      layers: "MODIS_Terra_Cloud_Optical_Thickness",
-      format: "image/png",
-      transparent: true,
-      version: "1.1.1",
-      time: date,
-      opacity: 0.55,
-      attribution: "NASA GIBS"
-    }
-  );
-  if (document.getElementById("clouds").checked) clouds.addTo(map);
-}
-
-function refreshData() {
-  // Prefer today's observation; GIBS will request the selected date.
-  // The timestamp is deliberately shown so users know when this page refreshed.
-  const date = utcDate(0);
-  addSatelliteLayer(date);
-  addCloudLayer(date);
-  document.getElementById("updated").textContent =
-    new Date().toLocaleString();
-  document.getElementById("statusText").textContent = "LIVE";
-}
-
-function setBase(value) {
-  if (value === "dark") {
-    map.removeLayer(street);
-    dark.addTo(map);
-  } else {
-    map.removeLayer(dark);
-    street.addTo(map);
-  }
-}
-
-document.getElementById("sat").addEventListener("change", e => {
-  if (!imagery) return;
-  e.target.checked ? imagery.addTo(map) : map.removeLayer(imagery);
-});
-
-document.getElementById("clouds").addEventListener("change", e => {
-  if (!clouds) return;
-  e.target.checked ? clouds.addTo(map) : map.removeLayer(clouds);
-});
-
-document.querySelectorAll('input[name="base"]').forEach(el =>
-  el.addEventListener("change", e => setBase(e.target.value))
-);
-
-document.getElementById("refresh").addEventListener("click", refreshData);
-
-document.getElementById("locate").addEventListener("click", () => {
-  map.locate({setView:true, maxZoom:15, enableHighAccuracy:true});
-});
-
-map.on("locationfound", e => {
-  if (marker) map.removeLayer(marker);
-  marker = L.marker(e.latlng).addTo(map)
-    .bindPopup(`Your browser-reported location<br>${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`)
-    .openPopup();
-});
-
-map.on("locationerror", () => {
-  alert("Location permission was denied or your browser could not determine your location.");
-});
-
-async function searchLocation(q) {
-  const parts = q.split(",").map(x => Number(x.trim()));
-  if (parts.length === 2 && parts.every(Number.isFinite)) {
-    map.setView(parts, 12);
-    if (marker) map.removeLayer(marker);
-    marker = L.marker(parts).addTo(map).bindPopup("Selected coordinates").openPopup();
-    return;
-  }
-
-  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`;
-  const res = await fetch(url, {headers: {"Accept":"application/json"}});
-  const data = await res.json();
-  if (!data.length) return alert("Location not found.");
-  const lat = Number(data[0].lat), lon = Number(data[0].lon);
-  map.setView([lat, lon], 12);
-  if (marker) map.removeLayer(marker);
-  marker = L.marker([lat, lon]).addTo(map)
-    .bindPopup(data[0].display_name)
-    .openPopup();
-}
-
-document.getElementById("go").addEventListener("click", () =>
-  searchLocation(document.getElementById("search").value.trim())
-);
-
-document.getElementById("search").addEventListener("keydown", e => {
-  if (e.key === "Enter") searchLocation(e.target.value.trim());
-});
-
-// Automatic page-side refresh every 15 minutes.
-// It does NOT claim that a satellite has produced a new image every 15 minutes.
-refreshData();
-setInterval(refreshData, 15 * 60 * 1000);
+const map=L.map("map",{zoomControl:true}).setView([6.5244,3.3792],7);
+const base=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(map);
+let sat=null,cloud=null,marker=null,deviceMarker=null,lat=6.5244,lng=3.3792;
+const $=id=>document.getElementById(id);
+function nasa(layer,nrt=false,opacity=1){return L.tileLayer.wms(`https://gibs.earthdata.nasa.gov/wms/epsg3857/${nrt?"nrt":"best"}/wms.cgi`,{layers:layer,format:"image/png",transparent:true,version:"1.1.1",opacity,attribution:"NASA GIBS"})}
+function selectPoint(a,b,name="LOCATION"){lat=a;lng=b;if(marker)map.removeLayer(marker);marker=L.marker([a,b]).addTo(map);$("place").innerHTML=`<b>${escapeHtml(name)}</b><small>LAT ${a.toFixed(6)} / LNG ${b.toFixed(6)}</small>`;loadPhotos(a,b);updateCoords()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function updateCoords(){$("coords").textContent=`LAT ${lat.toFixed(6)} / LNG ${lng.toFixed(6)} / Z ${map.getZoom()}`}
+map.on("zoomend moveend",updateCoords);map.on("click",e=>selectPoint(e.latlng.lat,e.latlng.lng,"MAP SELECTION"));
+function loadPhotos(a,b){$("streetStatus").textContent="QUERY";$("status").textContent="SEARCHING PUBLIC STREET IMAGERY…";$("photos").innerHTML="";if($("quality").value==="low"){ $("status").textContent="LOW DATA MODE: street photos load only when requested.";$("streetStatus").textContent="SAVER";return }fetch(`https://api.openstreetcam.org/2.0/photo/?lat=${a}&lng=${b}&radius=500`).then(r=>r.json()).then(j=>{const list=Array.isArray(j.result?.data)?j.result.data:(Array.isArray(j.result)?j.result:[]);if(!list.length){$("status").textContent="NO PUBLIC STREET PHOTOS WITHIN ~500 M";$("streetStatus").textContent="NO COVERAGE";return}$("status").textContent=`FOUND ${Math.min(list.length,8)} PUBLIC STREET IMAGE(S)`;$("streetStatus").textContent="ONLINE";list.slice(0,8).forEach(p=>{const src=p.lth_name||p.name||p.image||p.url||p.photo_url||p.fileurl;if(!src)return;const d=document.createElement("div");d.className="photo";d.innerHTML=`<img loading="lazy" src="${src}" alt="Street image"><span>${p.date_processed||p.date_added||"PUBLIC IMAGE"}</span>`;d.onclick=()=>{$("big").src=src;$("caption").textContent="KARTAVIEW // PUBLIC STREET IMAGERY";$("viewer").classList.remove("hidden")};$("photos").appendChild(d)})}).catch(()=>{$("streetStatus").textContent="OFFLINE";$("status").textContent="STREET API UNAVAILABLE"})}
+$("close").onclick=()=>$("viewer").classList.add("hidden");$("near").onclick=()=>loadPhotos(lat,lng);
+$("satLayer").onchange=e=>{if(e.target.checked){if(!sat)sat=nasa("MODIS_Terra_CorrectedReflectance_TrueColor");sat.addTo(map);$("satStatus").textContent="ONLINE"}else if(sat){map.removeLayer(sat);$("satStatus").textContent="STANDBY"}};
+$("cloudLayer").onchange=e=>{if(e.target.checked){if(!cloud)cloud=nasa("MODIS_Terra_Cloud_Optical_Thickness",true,.5);cloud.addTo(map)}else if(cloud)map.removeLayer(cloud)};
+$("streetLayer").onchange=e=>{if(e.target.checked)loadPhotos(lat,lng)};
+document.querySelectorAll(".modes button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".modes button").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(b.dataset.mode==="sat"){$("satLayer").checked=true;$("satLayer").dispatchEvent(new Event("change"))}if(b.dataset.mode==="street")loadPhotos(lat,lng)});
+async function search(q){if(!q)return;$("searchResult").textContent="QUERYING…";const c=q.split(",").map(Number);if(c.length===2&&c.every(Number.isFinite)){map.setView(c,15);selectPoint(c[0],c[1],"COORDINATE TARGET");$("searchResult").textContent="COORDINATE TARGET FOUND";return}try{const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`),d=await r.json();if(!d.length){$("searchResult").textContent="NO RESULT";return}const a=+d[0].lat,b=+d[0].lon;map.setView([a,b],15);selectPoint(a,b,d[0].display_name);$("searchResult").textContent="LOCATION FOUND"}catch(e){$("searchResult").textContent="SEARCH SERVICE UNAVAILABLE"}}
+$("go").onclick=()=>search($("q").value.trim());$("q").onkeydown=e=>{if(e.key==="Enter")search(e.target.value.trim())};
+$("locate").onclick=()=>{if(!navigator.geolocation)return;$("device").textContent="REQUESTING…";navigator.geolocation.getCurrentPosition(p=>{lat=p.coords.latitude;lng=p.coords.longitude;map.setView([lat,lng],17);if(deviceMarker)map.removeLayer(deviceMarker);deviceMarker=L.marker([lat,lng]).addTo(map).bindPopup("TIPIDON // THIS DEVICE").openPopup();$("device").textContent="ONLINE";selectPoint(lat,lng,"MY DEVICE");},()=>{$("device").textContent="DENIED"})};
+function network(){const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if($("quality").value!=="auto")return;if(!c)return;$("netText").textContent=(c.effectiveType||"AUTO").toUpperCase();if(c.saveData||["slow-2g","2g"].includes(c.effectiveType)){$("dataMode").textContent="LOW";$("netDot").style.color="#ffd166"}else if(c.effectiveType==="3g"){$("dataMode").textContent="NORMAL";$("netDot").style.color="#ffe066"}else{$("dataMode").textContent="HIGH";$("netDot").style.color="#00ff8c"}}$("quality").onchange=()=>{const v=$("quality").value;$("dataMode").textContent=v==="auto"?"SMART":v.toUpperCase()};network();setInterval(network,10000);setInterval(()=>$("clock").textContent=new Date().toLocaleTimeString(),1000);updateCoords();
